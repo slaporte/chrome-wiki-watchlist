@@ -1,22 +1,46 @@
 <html>
   <head>
-    <title>The Old Reader Notifier - Options</title>
+    <title>Wiki Watchlist Notifications - Options</title>
     <style type="text/css">
-    * { font-family: sans-serif; font-size: small; }
+    * { 
+      font-family: sans-serif; 
+    }
+    p {
+      font-size: small;
+    }
+    h2 {
+      font-size: small;
+    }
+    .important {
+      border: 1px solid #e74c3c;
+      padding: 1em;
+      background: #ecf0f1;
+    }
+    .unnecessary {
+      padding: 1em;
+    }
     </style>
   </head>
   <body>
     <p><img src="logo.png" alt=""/></p>
     <p>
-      <a href="ChangeLog">Changelog</a> |
-      <a href="https://github.com/knyar/theoldreader-chrome">Source code &amp; bug tracker</a> |
-      <a href="https://chrome.google.com/webstore/detail/the-old-reader-notifier/flnadglecinohkbmdpeooblldjpaimpo/reviews">Rate in Chrome Web Store</a>
+      <a href="https://github.com/knyar/theoldreader-chrome">Source available on github</a>
     </p>
-    <p>Page to open when icon is clicked:
-      <select id="click_page">
-        <option value="home">Home</option>
-        <option value="all_items">All items</option>
-      </select>
+    <h1>Wiki Watchlist Notification Settings</h1>
+    <div class='important'>
+      <h2>Required info</h2>
+    <p>
+      <label for="username">Username:</label> <input type="text" id="username">
+    </p>
+    <p>
+      <label for="watchlist_key">Watchlist token:</label> <input type="text" id="watchlist_key"></p>
+      <p>
+      <span style="color: gray"> Note: you must provide your "watchlist token", which can be found in your <a href='https://meta.wikimedia.org/wiki/Special:Preferences#mw-prefsection-watchlist' id='pref-link' target='_blank'>preferences page</a>, near the bottom, after logging in. If you change the wiki below, be sure you grabbed the right watchlist token!</span>
+    </p>
+  </div>
+  <div class='unnecessary'>
+    <h2>Other options</h2>
+    <p><label for="wiki">Wiki:</label> <input type="text" id="wiki"> <span style='color: gray'>Note: currently only supports *.wikimedia.org and *.wikipedia.org domains</span>.
     </p>
     <p><label for="show_notifications">Show popup notifications: <input type="checkbox" id="show_notifications"></label></p>
     <p>Auto-close notification after <input type="number" min="0" max="999" id="notification_timeout"> seconds (0 to keep open)</p>
@@ -31,6 +55,8 @@
       <span class="message" id="save_required" style="display: none; padding-left: 2em; font-weight: bold; color: firebrick">&lt; Click button to save your changes</span>
       <span class="message" id="save_failed" style="display: none; padding-left: 2em; font-weight: bold; color: firebrick">Please correct these values!</span>
     </p>
+  </div>
+    <p><span style='color: gray'>Based on a Chrome extension for The Old Reader by <a href='https://github.com/knyar/'>knyar</a>. See <a href='https://github.com/knyar/theoldreader-chrome'>theoldreader-chrome</a>.</span></p>
     <script src="jquery-2.0.2.min.js"></script>
     <script src="jquery.color.js"></script>
     <script src="options.js"></script>

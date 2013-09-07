@@ -12,8 +12,12 @@ function showNotification(title, body) {
   }
   
   var notification = webkitNotifications.createNotification('icon-48.png', title, body);
-  notification.tag = "theoldreader-chrome"; // Will update the notification instead of creating a new one
-  notification.onclick = function() { openOurTab(); this.close(); } // Opens the Old Reader page and self-destructs
+  notification.tag = "wiki-watchlist"; // Will update the notification instead of creating a new one
+  if (title == 'Error') {
+    notification.onclick = function() { chrome.tabs.create({url: "options.html"}); this.close(); }
+  } else {
+    notification.onclick = function() { openOurTab(); this.close(); }
+  }
   
   window.clearTimeout(notificationTimeout); // If updating a notification, reset timeout
   if (localStorage['notification_timeout'] > 0) {
@@ -28,7 +32,7 @@ function showNotification(title, body) {
 
 function findOurTab(callback) {
   chrome.tabs.query(
-    {url: "*://theoldreader.com/*"},
+    {url: "*://" + localStorage['wiki'] + "/w/index.php?title=Special:Watchlist&days=0"},
     function (tabs) {
       callback(tabs[0]);
     }
@@ -40,7 +44,7 @@ function openOurTab() {
     if (tab) {
       chrome.tabs.update(tab.id, {selected: true});
     } else {
-      var url = (localStorage['prefer_https'] == 'yes' ? 'https://theoldreader.com/' : 'http://theoldreader.com/');
+      var url = (localStorage['prefer_https'] == 'yes' ? 'https://' + localStorage['wiki'] + '/w/index.php?title=Special:Watchlist&days=0' : 'http://' + localStorage['wiki'] + '/w/index.php?title=Special:Watchlist&days=0');
       if (localStorage['click_page'] == 'all_items') { url += 'posts/all'; }
       chrome.tabs.create({url: url});
     }
@@ -50,9 +54,9 @@ function openOurTab() {
 function reportError() {
   chrome.browserAction.setIcon({path: 'icon-inactive.png'});
   chrome.browserAction.setBadgeText({text: ''});
-  chrome.browserAction.setTitle({title: 'Error fetching feed counts'});
+  chrome.browserAction.setTitle({title: 'Error fetching watchlist counts'});
 
-  showNotification('Error', 'Failed to fetch feed counts');
+  showNotification('Error', 'Failed to get your watchlist. Please check your configuration options!');
 }
 
 function updateIcon(count) {
@@ -69,40 +73,34 @@ function updateIcon(count) {
   chrome.browserAction.setIcon({path: 'icon-active.png'});
   chrome.browserAction.setBadgeBackgroundColor({color: BADGE_BACKGROUND_COLOR});
   chrome.browserAction.setBadgeText({text: count});
-  chrome.browserAction.setTitle({title: 'The Old Reader' + title_suffix});
+  chrome.browserAction.setTitle({title: title_suffix});
 
   if (countInt > last_unread_count) {
-    var text = 'You have ' + countInt + ' unread post' + (countInt > 1 ? 's' : '') + '.';
-    showNotification('New posts', text);
+    var text = 'You have ' + countInt + ' unread edit' + (countInt > 1 ? 's' : '') + ' on your watchlist on ' + localStorage['wiki'] + '.';
+    showNotification('New edits!', text);
   }
   last_unread_count = countInt;
 }
 
 function parseCounters(feedData) {
   var unread_count = 0;
+  var wl = feedData['query']['watchlist']
+  console.log(wl.length)
 
-  if(!feedData.feeds) {
-    return reportError()
-  }
-
-  var i, folder;
-  for (i=0; folder=feedData.feeds[i]; i++) {
-    var k, feed;
-    for (k=0; feed=folder.feeds[k]; k++) {
-      if (feed.unread_count) {
-        unread_count += feed.unread_count;
-      }
+  for (var i = 0; i < wl.length; i++) {
+    var rev = wl[i]
+    if(wl[i]['notificationtimestamp']) {
+      unread_count += 1;
     }
   }
-  for (i=0; folder=feedData.following[i]; i++) {
-    if (folder.unread_count) {
-      unread_count += folder.unread_count;
-    }
-  }
+  console.log(unread_count)
   updateIcon(unread_count)
 }
 
 function getCountersFromHTTP() {
+  if(!checkUserOptions()) {
+    return
+  }
   // If request times out or if we get unexpected output, report error and reschedule
   function refreshFailed() {
     window.clearTimeout(requestTimeout);
@@ -151,10 +149,11 @@ function getCountersFromHTTP() {
   }
 
   try {
+    var wp_url = 'http://' + localStorage['wiki'] + '/w/api.php?action=query&list=watchlist&wlowner=' + localStorage['username'] + '&wltoken=' + localStorage['watchlist_key'] + '&wllimit=500&wlprop=ids|title|flags|user|userid|comment|parsedcomment|timestamp|sizes|notificationtimestamp|loginfo&format=json';
     if (localStorage['prefer_https'] == 'yes') {
-      httpRequest.open('GET', 'https://theoldreader.com/feeds/counts.json', true);
+      httpRequest.open('GET', wp_url, true);
     } else {
-      httpRequest.open('GET', 'http://theoldreader.com/feeds/counts.json', true);
+      httpRequest.open('GET', wp_url, true);
     }
     httpRequest.send(null);
   } catch (exception) {
@@ -163,7 +162,17 @@ function getCountersFromHTTP() {
   }
 }
 
+function checkUserOptions() {
+  if(!localStorage['watchlist_key']||!localStorage['username']||!localStorage['wiki']) {
+    console.log('no user or watchlist key!')
+    chrome.tabs.create({url: "options.html"});
+    return false;
+  }
+  return true;
+}
+
 function scheduleRefresh() {
+  checkUserOptions()
   window.clearTimeout(refreshTimeout);
   refreshTimeout = window.setTimeout(getCountersFromHTTP, (localStorage['refresh_interval'] || 15)*60*1000);
 }
@@ -190,6 +199,12 @@ function onExtensionUpdate(details) {
 }
 
 function startupInject() {
+  // We will not use this process
+
+  return
+
+  /*
+
   // At this point, all old content scripts, if any, cannot communicate with the extension anymore
   // Old instances of content scripts have a "kill-switch" to terminate their event listeners
   // Here we inject new instances in existing tabs
@@ -201,4 +216,5 @@ function startupInject() {
       }
     }
   );
+  **/
 }
