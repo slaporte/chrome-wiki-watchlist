@@ -4,7 +4,9 @@ getCountersFromHTTP();
 
 // initialize button click event
 chrome.browserAction.onClicked.addListener(function(tab) {
-  openOurTab();
+  //openOurTab();
+  getCountersFromHTTP();
+  checkUserOptions();
 });
 
 // listen to injected scripts

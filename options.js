@@ -4,10 +4,11 @@ var DEFAULT_WIKI = 'meta.wikimedia.org';
 
 function save_options() {
   if(!validate_options()) return;
-  localStorage['show_notifications'] = $('#show_notifications').prop('checked') ? 'yes' : 'no';
+  localStorage['no_notifications'] = $('#show_notifications').prop('checked') ? 'no' : 'yes';
   localStorage['notification_timeout'] = parseInt($('#notification_timeout').val());
   localStorage['prefer_https'] = $('#prefer_https').prop('checked') ? 'yes' : 'no';
   localStorage['refresh_interval'] = parseInt($('#refresh_interval').val());
+  localStorage['listlim'] = parseInt($('#listlim').val());
   localStorage['username'] = $('#username').val();
   localStorage['watchlist_key'] = $('#watchlist_key').val();
   localStorage['wiki'] = $('#wiki').val();
@@ -42,7 +43,9 @@ function validate_options() {
 }
 
 function load_options() {
-  if (localStorage['show_notifications'] == 'yes') {
+  if (localStorage['no_notifications'] == 'yes') {
+    $('#show_notifications').prop('checked', false);
+  } else {
     $('#show_notifications').prop('checked', true);
   }
   $('#notification_timeout').val(localStorage['notification_timeout'] || 0);
@@ -50,6 +53,7 @@ function load_options() {
     $('#prefer_https').prop('checked', true);
   }
   $('#refresh_interval').val(localStorage['refresh_interval'] || 15);
+  $('#listlim').val(localStorage['listlim'] || 5);
   $('#username').val(localStorage['username'] || 'Please enter username');
   $('#watchlist_key').val(localStorage['watchlist_key'] || 'Please enter watchlist key');
   $('#wiki').val(localStorage['wiki'] || DEFAULT_WIKI);
@@ -71,7 +75,7 @@ $(document).ready(function() {
     $('.message').finish().hide();
     $('#save_required').show();
   });
-  $('#notification_timeout').closest('p').toggle(localStorage['show_notifications'] == 'yes');
+  $('#notification_timeout').closest('p').toggle(localStorage['no_notifications'] != 'yes');
   $('#show_notifications').click(function() {
     if ($('#show_notifications').prop('checked')) {
       $('#notification_timeout').closest('p').slideDown('fast');

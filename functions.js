@@ -7,7 +7,7 @@ var last_unread_count = 0;
 var notificationTimeout;
 
 function showNotification(title, body) {
-  if (localStorage['show_notifications'] != 'yes') {
+  if (localStorage['no_notifications'] == 'yes') {
     return;
   }
   
@@ -52,6 +52,7 @@ function openOurTab() {
 }
 
 function reportError() {
+  scheduleRefresh();
   chrome.browserAction.setIcon({path: 'icon-inactive.png'});
   chrome.browserAction.setBadgeText({text: ''});
   chrome.browserAction.setTitle({title: 'Error fetching watchlist counts'});
@@ -76,7 +77,7 @@ function updateIcon(count) {
   chrome.browserAction.setTitle({title: title_suffix});
 
   if (countInt > last_unread_count) {
-    var text = 'You have ' + countInt + ' unread edit' + (countInt > 1 ? 's' : '') + ' on your watchlist on ' + localStorage['wiki'] + '.';
+    var text = 'You have ' + countInt + ' unread page' + (countInt > 1 ? 's' : '') + ' on your watchlist on ' + localStorage['wiki'] + '.';
     showNotification('New edits!', text);
   }
   last_unread_count = countInt;
@@ -84,16 +85,19 @@ function updateIcon(count) {
 
 function parseCounters(feedData) {
   var unread_count = 0;
+  var unread_list = [];
   var wl = feedData['query']['watchlist']
-  console.log(wl.length)
 
   for (var i = 0; i < wl.length; i++) {
     var rev = wl[i]
-    if(wl[i]['notificationtimestamp']) {
+    if(rev['notificationtimestamp'] && unread_list.indexOf(rev['title']) == -1) {
       unread_count += 1;
+      unread_list.push(rev['title'])
     }
   }
-  console.log(unread_count)
+  console.log(unread_list.length)
+  localStorage.setItem('wl', JSON.stringify(wl));
+  localStorage.setItem('unread', unread_count)
   updateIcon(unread_count)
 }
 
