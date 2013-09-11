@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Wiki Watchlist Notifier",
   "description": "Notifies you of new items on your watchlist",
-  "version": "0.101",
+  "version": "0.12",
   "icons": {
     "16": "Wikimedia_Community-16.png",
     "48": "Wikimedia_Community-48.png",
